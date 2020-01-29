@@ -46,3 +46,4 @@ ggplot(data = salmon_us_annual, aes(x = year, y = tot_value, group = sub_group))
   scale_color_paletteer_d("palettetown::parasect")
 ```
 
+![](https://octodex.github.com/images/gangnamtocat.png)
