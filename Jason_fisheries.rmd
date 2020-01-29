@@ -13,6 +13,9 @@ library(tidyverse) # install.packages("tidyverse")
 library(here) # install.packages("here")
 library(janitor) # install.packages("janitor")
 library(paletteer) # install.packages("paletteer")
+
+# Using gh-pages as the repository in github allows the knit rmd to be a webpage
+# http://jhatfield2000.github.io/r-collab/Jason_fisheries
 ```
 
 Read in noaa_landings.csv
