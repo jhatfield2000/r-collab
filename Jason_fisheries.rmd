@@ -3,28 +3,62 @@ title: "My fisheries analysis"
 author: "Jason"
 date: "1/28/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, messages = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+library(tidyverse) # install.packages("tidyverse")
+library(here) # install.packages("here")
+library(janitor) # install.packages("janitor")
+library(paletteer) # install.packages("paletteer")
 ```
 
-## R Markdown
+Read in noaa_landings.csv
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r}
+us_landings <- read_csv(here("data", "noaa_landings.csv"),
+                        na = "no data")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+Clean up the column names:
 
-You can also embed plots, for example:
+```{r}
+salmon_clean <- us_landings %>% 
+  clean_names() %>% 
+  mutate(afs_name = str_to_lower(afs_name)) %>% 
+  mutate(dollars_num = parse_number(dollars_usd)) %>% 
+  filter(str_detect(afs_name, pattern = "salmon")) %>% 
+  separate(afs_name,into = c("salmon_group", "subgroup"), sep = ", ") %>% 
+  drop_na(dollars_num)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# be careful about using drop_na as it removes entire rows
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Annual total value by salmon subgroup
+
+```{r}
+salmon_us_annual <- salmon_clean %>% 
+  group_by(year, subgroup) %>% 
+  summarize(
+    tot_value = sum(dollars_num, na.rm = TRUE)
+  )
+```
+
+From `salmon_us_annual`, create a line graph with year on the x-axis, and tot_value on the y-axis.  Hint: remember groupings!
+
+```{r}
+ggplot(data = salmon_us_annual, aes(x = year, y = tot_value, group = subgroup)) +
+  geom_line(aes(color = subgroup)) +
+  theme_bw() + 
+  labs(x = "Year",
+       y = "Annual Sales by Subgroup",
+       title = "US Commercial Salmon Value (in USD)") +
+  scale_color_paletteer_d("calecopal::figmtn")
+
+
+# calecopal figmtn
+```
+
